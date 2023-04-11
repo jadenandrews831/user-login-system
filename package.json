@@ -1,0 +1,23 @@
+{
+  "name": "user-login-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jadenandrews831/user-login-system.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jadenandrews831/user-login-system/issues"
+  },
+  "homepage": "https://github.com/jadenandrews831/user-login-system#readme",
+  "dependencies": {
+    "sqlite3": "^5.1.6"
+  }
+}
