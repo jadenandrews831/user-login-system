@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/jadenandrews831/user-login-system#readme",
   "dependencies": {
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
     "sqlite3": "^5.1.6"
   }
 }
