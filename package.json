@@ -1,7 +1,6 @@
 {
   "name": "user-login-system",
   "version": "1.0.0",
-  "description": "",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -18,8 +17,10 @@
   },
   "homepage": "https://github.com/jadenandrews831/user-login-system#readme",
   "dependencies": {
+    "express": "^4.18.2",
     "fs": "^0.0.1-security",
     "http": "^0.0.1-security",
     "sqlite3": "^5.1.6"
-  }
+  },
+  "description": ""
 }
