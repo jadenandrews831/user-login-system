@@ -1,6 +1,10 @@
 const express = require("express");
-const app = express();
+const bodyParser = require('body-parser')
 var users = require('./users.js') 
+
+const app = express();
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname+'/src/registration.html')
@@ -10,8 +14,12 @@ app.get("/registration.html", (req, res) => {
   res.sendFile(__dirname+'/src/registration.html')
 });
 
+app.get("/style.css", (req, res) => {
+  res.sendFile(__dirname+'/src/style.css')
+})
+
 app.post("/registration.html", (req, res) => {
-  console.log(req.body)
+  console.log(req)
   res.sendFile(__dirname+"/src/index.html")
 })
 
