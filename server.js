@@ -32,6 +32,20 @@ app.get("/login.html", (req, res) => {
   console.log(req.body)
 });
 
+app.post("/login.html", (req, res) => {
+  const username = req.body.username
+  const password = req.body.password
+
+  users.push ({
+    InputUser: username,
+    InputPass: password,
+  })
+   res.render("home", {
+    data: users
+   })
+});
+
 app.listen(3000, () => {
   console.log("Listening on Port http://localhost:3000");
 });
+
