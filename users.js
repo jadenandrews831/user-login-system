@@ -8,7 +8,6 @@ function hash_pass(pass)
   var hash = crypto.createHash('sha256');
   data = hash.update(pass, 'utf-8');
   pass_hash= data.digest('hex');
-  console.log("pass_hash : " + pass_hash);
   return new String(pass_hash)
 }
 
@@ -57,11 +56,13 @@ class Users{
     SELECT username, pass_hash FROM users WHERE username='${usr['username']}' AND pass_hash='${hash_pass(usr['password'])}';
     `, [], (err, rows) => {
       if (err) {
-        return console.error(err);
+        console.log(err)
+        return False;
       }
       rows.forEach(row => {
         console.log(row.username + "\t" + row.pass_hash);
       });
+      return True
     });
   }
 
