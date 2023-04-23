@@ -7,7 +7,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 const db = new users.Users('users.db');
+var username = req.body.username;
+var password = req.body.password;
 
+if(req.body.username && req.body.password) {
+  console.log('Checking username:' + username + 'password' + password);
+  var database = new sqlite3.database('usersdatabase');
+  database.all("Verify tables where (username == ?) AND (password == ?") , function(err,rows){
+    if(err) {
+
+    }
+  }
+}
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname+'/src/registration.html');
@@ -29,6 +40,7 @@ app.get("/login.html", (req, res) => {
 });
 app.post("/login.html", (req, res) => {
   console.log(req.body['username'])
+  console.log(req.body['password'])
 })
 
 app.get("/style.css", (req, res) => {
