@@ -50,6 +50,16 @@ function Users(db_name){
     return newdb
   }
 
+  function checkForUser(db, usr) {
+    db.all(`
+    select username, pass_hash from users where username = ${user[0]} AND pass_hash = ${pass_hash(user[1])}
+    `, (err, rows) => {
+      rows.forEach(row => {
+        console.log(row.username + "\t" + row.pass_hash + "\t");
+      })
+    })
+  }
+
 
   function runQueries(db) {
       db.all(`select * from users`, "That's all folks", (err, rows) => {
