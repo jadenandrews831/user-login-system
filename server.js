@@ -29,7 +29,11 @@ app.get("/registration.html", (req, res) => {
 });
 
 app.post("/registration.html", (req, res) => {
+  console.log(req.body);
   console.log(req.body['First Name']);
+  console.log(req.body['Last Name'])
+  console.log(req.body['password']);
+  console.log(req.body['username']);
   db.addtoTables(req.body);
   res.sendFile(__dirname+"/src/index.html");
 })
