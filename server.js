@@ -6,6 +6,8 @@ const app = express();
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
+db = users.
+
 app.get("/", (req, res) => {
   res.sendFile(__dirname+'/src/registration.html')
 });
@@ -19,10 +21,6 @@ app.get("/style.css", (req, res) => {
 })
 
 app.post("/registration.html", (req, res) => {
-  first_name = req.body['First Name']
-  last_name = req.body['Last Name']
-  username = req.body['Username']
-  password = req.body['password']
   console.log()
   res.sendFile(__dirname+"/src/index.html")
 })

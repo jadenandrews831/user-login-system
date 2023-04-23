@@ -14,13 +14,24 @@ function hash_pass(pass)
 
 function Users(db_name){
 
+  let db= new sqlite3.Database(`./${db_name}.db`, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+    if (err && err.code == "SQLITE_CANTOPEN") {
+        createDatabase();
+        return;
+        } else if (err) {
+            console.log("Getting error " + err);
+            exit(1);
+    }
+    runQueries(db);
+  });
+
   function createDatabase(newdb) {
       var newdb = new sqlite3.Database(db_name, (err) => {
           if (err) {
               console.log("Getting error " + err);
               exit(1);
           }
-          createTables(newdb);
+          createTables(db_name);
       });
 
       return newdb
