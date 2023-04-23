@@ -46,7 +46,7 @@ app.post("/login.html", (req, res) => {
   console.log(req.body['username'])
   console.log(req.body['password'])
   bool = db.checkForUser(req.body);
-  if (bool) {
+  if (!bool) {
     res.sendFile(__dirname+"/src/index.html");
   } else 
   {

@@ -57,12 +57,12 @@ class Users{
     `, [], (err, rows) => {
       if (err) {
         console.log(err)
-        return False;
+        return false;
       }
       rows.forEach(row => {
         console.log(row.username + "\t" + row.pass_hash);
       });
-      return True
+      return true;
     });
   }
 
