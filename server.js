@@ -31,7 +31,6 @@ app.get("/login.html", (req, res) => {
   res.sendFile(__dirname+'/src/login.html');
   console.log(req.body);
 });
-
 app.post("/login.html", (req, res) => {
   console.log(req.body['username'])
 })
@@ -39,7 +38,7 @@ app.post("/login.html", (req, res) => {
 app.get("/style.css", (req, res) => {
   res.sendFile(__dirname+'/src/style.css');
 })
-
 app.listen(3000, () => {
   console.log("Listening on Port http://localhost:3000");
 });
+
