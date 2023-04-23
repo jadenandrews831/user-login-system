@@ -9,65 +9,58 @@ function hash_pass(pass)
   data = hash.update(pass, 'utf-8');
   pass_hash= data.digest('hex');
   console.log("pass_hash : " + pass_hash);
-  return pass_hash
+  return new String(pass_hash)
 }
 
 class Users{
   constructor(db_name){
-    this.db_name = db_name
-    this.db = new sqlite3.Database(this.db_name, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
-      if (err && err.code == "SQLITE_CANTOPEN") {
-          this.db = this.createDatabase();
-          return;
-          } else if (err) {
-              console.log("Getting error " + err);
-              exit(1);
-      }
-    });
-  }
-
-  createDatabase() {
-    var newdb = new sqlite3.Database(this.db_name, (err) => {
+    this.db_name
+    this.db = new sqlite3.Database(db_name, (err) => {
       if (err) {
-          console.log("Getting error " + err);
-          exit(1);
+        return console.error(err.message);
       }
-      this.createTables();
+      console.log(`Connected to ${db_name}`);
     });
-
-    return newdb
+    this.createTable();
   }
 
-  createTables() {
+  createTable() {
     this.db.exec(`
     create table users (
         username text primary key not null,
         pass_hash text not null,
-        firstname not null,
-        lastname text not null,
-        email text not null
+        firstname text not null,
+        lastname text not null
     );
         `, ()  => {
             this.runQueries();
     });
+
   }
 
   addtoTables(usr) {
     this.db.exec(`
-    insert into users (username, pass_hash, firstname, lastname, email)
-        values (${usr[0]}, ${hash_pass(usr[1])}, ${usr[2]}, ${usr[3]}, ${usr[4]}),
-        `, ()  => {
-          this.runQueries();
+    INSERT INTO users (username, pass_hash, firstname, lastname) VALUES ('${usr['username']}', '${hash_pass(usr['password'])}', '${usr['First Name']}', '${usr['Last Name']}');
+        `, (err, rows)  => {
+          if (err){
+            console.log("User not added")
+            return console.error(err)
+          }
+          console.log(`rows: {rows}`)
+          this.checkForUser(usr);
+          console.log("Added new user");
         });
-    console.log("Added new user");
   }
 
   checkForUser(usr) {
     this.db.all(`
-    select username, pass_hash from users where username = ${user[0]} AND pass_hash = ${pass_hash(user[1])}
-    `, (err, rows) => {
+    SELECT username, pass_hash FROM users WHERE username='${usr['username']}' AND pass_hash='${hash_pass(usr['password'])}';
+    `, [], (err, rows) => {
+      if (err) {
+        return console.error(err);
+      }
       rows.forEach(row => {
-        console.log(row.username + "\t" + row.pass_hash + "\t");
+        console.log(row.username + "\t" + row.pass_hash);
       });
     });
   }
@@ -76,9 +69,9 @@ class Users{
   runQueries() {
     this.db.all(`
     select * from users
-    `, (err, rows) => {
+    `, [], (err, rows) => {
       rows.forEach(row => {
-        console.log(row.username + "\t" +row.pass_hash + "\t" +row.firstname + "\t" +row.lastname + "\t" +row.email);
+        console.log(row.username + "\t" +row.pass_hash + "\t" +row.firstname + "\t" +row.lastname);
       });
     });
   }
