@@ -19,12 +19,17 @@ app.get("/style.css", (req, res) => {
 })
 
 app.post("/registration.html", (req, res) => {
-  console.log(req)
+  first_name = req.body['First Name']
+  last_name = req.body['Last Name']
+  username = req.body['Username']
+  password = req.body['password']
+  console.log()
   res.sendFile(__dirname+"/src/index.html")
 })
 
 app.get("/login.html", (req, res) => {
   res.sendFile(__dirname+'/src/login.html')
+  console.log(req.body)
 });
 
 app.listen(3000, () => {
