@@ -63,26 +63,15 @@ class Users{
         } 
         if (rows.length == 0){
           send(false);
-        } else {
-          console.log(rows);
+        } else (if rows.length == 1){
           send(true);
-          rows.forEach(row => {
-          console.log(row.username + "\t" + row.pass_hash);
-        });
+          console.log("Found user " + row.username + " with matching pass");
+        } else {
+          send(false);
+          console.log("Hmm... something went wrong. Multiple Users Found")
         }
-        
-      });
-    });
-  }
 
-
-  runQueries() {
-    this.db.all(`
-    select * from users
-    `, [], (err, rows) => {
-      rows.forEach(row => {
-        console.log(row.username + "\t" +row.pass_hash + "\t" +row.firstname + "\t" +row.lastname);
-      });
+        });
     });
   }
 }
