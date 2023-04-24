@@ -32,7 +32,7 @@ class Users{
         lastname text not null
     );
         `, ()  => {
-            this.runQueries();
+            console.log("table Created");
     });
 
   }
@@ -63,9 +63,9 @@ class Users{
         } 
         if (rows.length == 0){
           send(false);
-        } else (if rows.length == 1){
+        } else if (rows.length == 1){
           send(true);
-          console.log("Found user " + row.username + " with matching pass");
+          console.log("Found user " + rows[0].username + " with matching pass");
         } else {
           send(false);
           console.log("Hmm... something went wrong. Multiple Users Found")
