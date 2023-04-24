@@ -45,7 +45,7 @@ app.get("/login.html", (req, res) => {
 
 app.post("/login.html", (req, res) => {
   login(req, res);
-});
+})
 
 app.get("/style.css", (req, res) => {
   res.sendFile(__dirname+'/src/style.css');
