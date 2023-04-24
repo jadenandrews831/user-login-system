@@ -36,7 +36,7 @@ app.post("/registration.html", (req, res) => {
   console.log(req.body['username']);
   db.addtoTables(req.body);
   res.sendFile(__dirname+"/src/login.html");
-})
+});
 
 app.get("/login.html", (req, res) => {
   res.sendFile(__dirname+'/src/login.html');
@@ -45,11 +45,12 @@ app.get("/login.html", (req, res) => {
 
 app.post("/login.html", (req, res) => {
   login(req, res);
-})
+});
 
 app.get("/style.css", (req, res) => {
   res.sendFile(__dirname+'/src/style.css');
-})
+});
+
 app.listen(3000, () => {
   console.log("Listening on Port http://localhost:3000");
 });
