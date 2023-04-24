@@ -42,18 +42,9 @@ app.get("/login.html", (req, res) => {
   res.sendFile(__dirname+'/src/login.html');
   console.log(req.body);
 });
+
 app.post("/login.html", (req, res) => {
-  console.log(req.body['username'])
-  console.log(req.body['password'])
-  bool = db.checkForUser(req.body);
-  if (!bool) {
-    res.sendFile(__dirname+"/src/index.html");
-  } else 
-  {
-    console.log("Login Failed")
-    res.sendFile(__dirname+"/src/login.html");
-  }
-  
+  login(req, res);
 })
 
 app.get("/style.css", (req, res) => {
@@ -63,3 +54,16 @@ app.listen(3000, () => {
   console.log("Listening on Port http://localhost:3000");
 });
 
+async function login(req, res) {
+  console.log(req.body['username'])
+  console.log(req.body['password'])
+  bool = await db.checkForUser(req.body);
+  console.log(bool);
+  if (bool) {
+    res.sendFile(__dirname+"/src/index.html");
+  } else 
+  {
+    console.log("Login Failed")
+    res.sendFile(__dirname+"/src/login.html");
+  }
+}

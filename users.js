@@ -52,17 +52,26 @@ class Users{
   }
 
   checkForUser(usr) {
-    this.db.all(`
-    SELECT username, pass_hash FROM users WHERE username='${usr['username']}' AND pass_hash='${hash_pass(usr['password'])}';
-    `, [], (err, rows) => {
-      if (err) {
-        console.log(err)
-        return false;
-      }
-      rows.forEach(row => {
-        console.log(row.username + "\t" + row.pass_hash);
+    return new Promise(send => {
+      this.db.all(`
+      SELECT username, pass_hash FROM users WHERE username='${usr['username']}' AND pass_hash='${hash_pass(usr['password'])}';
+      `, [], (err, rows) => {
+        if (err) {
+          send(false);
+          console.log(err);
+          exit();
+        } 
+        if (rows.length == 0){
+          send(false);
+        } else {
+          console.log(rows);
+          send(true);
+          rows.forEach(row => {
+          console.log(row.username + "\t" + row.pass_hash);
+        });
+        }
+        
       });
-      return true;
     });
   }
 
