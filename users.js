@@ -63,7 +63,7 @@ class Users{
         } 
         if (rows.length == 0){
           send(false);
-        } else (if rows.length == 1){
+        } else if (rows.length == 1){
           send(true);
           console.log("Found user " + row.username + " with matching pass");
         } else {
