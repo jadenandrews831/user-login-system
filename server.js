@@ -29,13 +29,13 @@ app.get("/registration.html", (req, res) => {
 });
 
 app.post("/registration.html", (req, res) => {
-  console.log(req.body);
-  console.log(req.body['First Name']);
-  console.log(req.body['Last Name'])
-  console.log(req.body['password']);
-  console.log(req.body['username']);
-  db.addtoTables(req.body);
-  res.sendFile(__dirname+"/src/login.html");
+  if (users.check_pass(req.body['password'])){
+    db.addtoTables(req.body);
+    res.sendFile(__dirname+"/src/login.html");
+  }
+  else{
+    res.sendFile(__dirname+"/src/registration.html");
+  }
 });
 
 app.get("/login.html", (req, res) => {
@@ -56,8 +56,6 @@ app.listen(3000, () => {
 });
 
 async function login(req, res) {
-  console.log(req.body['username'])
-  console.log(req.body['password'])
   bool = await db.checkForUser(req.body);
   console.log(bool);
   if (bool) {

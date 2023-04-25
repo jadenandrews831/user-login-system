@@ -3,12 +3,18 @@ var fs = require('fs');
 var sqlite3 = require('sqlite3');
 var crypto = require('crypto')
 
+const psswd_check = /[.*]{8}/
+
+function check_pass(pass) {
+  return pass.text(psswd_check);
+}
+
 function hash_pass(pass)
 {
   var hash = crypto.createHash('sha256');
   data = hash.update(pass, 'utf-8');
   pass_hash= data.digest('hex');
-  return new String(pass_hash)
+  return new String(pass_hash);
 }
 
 class Users{
@@ -25,21 +31,21 @@ class Users{
 
   createTable() {
     this.db.exec(`
-    create table users (
+    CREATE TABLE IF NOT EXISTS Users (
         username text primary key not null,
         pass_hash text not null,
         firstname text not null,
         lastname text not null
     );
         `, ()  => {
-            console.log("table Created");
+            console.log("table created");
     });
 
   }
 
   addtoTables(usr) {
     this.db.exec(`
-    INSERT INTO users (username, pass_hash, firstname, lastname) VALUES ('${usr['username']}', '${hash_pass(usr['password'])}', '${usr['First Name']}', '${usr['Last Name']}');
+    INSERT INTO Users (username, pass_hash, firstname, lastname) VALUES ('${usr['username']}', '${hash_pass(usr['password'])}', '${usr['First Name']}', '${usr['Last Name']}');
         `, (err, rows)  => {
           if (err){
             console.log("User not added")
@@ -54,7 +60,7 @@ class Users{
   checkForUser(usr) {
     return new Promise(send => {
       this.db.all(`
-      SELECT username, pass_hash FROM users WHERE username='${usr['username']}' AND pass_hash='${hash_pass(usr['password'])}';
+      SELECT username, pass_hash FROM Users WHERE username='${usr['username']}' AND pass_hash='${hash_pass(usr['password'])}';
       `, [], (err, rows) => {
         if (err) {
           send(false);
@@ -77,3 +83,4 @@ class Users{
 }
 
 module.exports.Users = Users
+module.exports.check_pass = check_pass
