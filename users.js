@@ -3,18 +3,21 @@ var fs = require('fs');
 var sqlite3 = require('sqlite3');
 var crypto = require('crypto')
 
-const psswd_check = /[.*]{8}/
+const psswd_check = /^(?=.{8,})(?=.*[a-z])(?=.*[A-Z])[\w\d_\)\(\*\&\^\%\$\#\@\!]*$/gm   //requires one capital letter and o
 
 function check_pass(pass) {
-  return pass.text(psswd_check);
+  return psswd_check.test(pass);
 }
 
-function hash_pass(pass)
-{
+function hash_pass(pass){
   var hash = crypto.createHash('sha256');
   data = hash.update(pass, 'utf-8');
   pass_hash= data.digest('hex');
   return new String(pass_hash);
+}
+
+function pass_match(pass, pass_){
+  return pass == pass_
 }
 
 class Users{
@@ -41,6 +44,25 @@ class Users{
             console.log("table created");
     });
 
+  }
+
+  findUser(username){
+    this.db.exec(`
+    SELECT username FROM Users WHERE username = ${username};
+    `, (err, rows) => {
+      if (err){
+        console.error(err);
+        console.log('No Such Username')
+        return false
+      } else{
+        if (rows.length != 1) return false;
+        rows.forEach(row => {
+          console.log(row)
+        });
+        return true;
+      }
+
+    });
   }
 
   addtoTables(usr) {
@@ -84,3 +106,4 @@ class Users{
 
 module.exports.Users = Users
 module.exports.check_pass = check_pass
+module.exports.pass_match = pass_match

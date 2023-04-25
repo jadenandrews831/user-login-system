@@ -24,26 +24,30 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname+'/src/registration.html');
 });
 
-app.get("/registration.html", (req, res) => {
+app.get("/registration", (req, res) => {
   res.sendFile(__dirname+'/src/registration.html');
 });
 
-app.post("/registration.html", (req, res) => {
+app.post("/registration", (req, res) => {
+  if (!users.pass_match(req.body['password'], req.body['password_'])){
+    res.sendFile(__dirname+"/src/registration-chg-pass.html");
+  }
   if (users.check_pass(req.body['password'])){
-    db.addtoTables(req.body);
-    res.sendFile(__dirname+"/src/login.html");
-  }
-  else{
-    res.sendFile(__dirname+"/src/registration.html");
-  }
+    if (!db.findUser(req.body['username'])){
+      db.addtoTables(req.body);
+      res.sendFile(__dirname+"/src/login.html");
+    } else {
+      res.sendFile(__dirname+'/src/registration-usr-tkn.html')
+    }
+  } 
 });
 
-app.get("/login.html", (req, res) => {
+app.get("/login", (req, res) => {
   res.sendFile(__dirname+'/src/login.html');
   console.log(req.body);
 });
 
-app.post("/login.html", (req, res) => {
+app.post("/login", (req, res) => {
   login(req, res);
 })
 
@@ -63,6 +67,6 @@ async function login(req, res) {
   } else 
   {
     console.log("Login Failed")
-    res.sendFile(__dirname+"/src/login_err.html");
+    res.sendFile(__dirname+"/src/login-err.html");
   }
 }
