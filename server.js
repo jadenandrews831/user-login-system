@@ -33,17 +33,20 @@ app.get("/registration", (req, res) => {
 });
 
 app.post("/registration", (req, res) => {
-  if (!users.pass_match(req.body['password'], req.body['password_'])){
+  if (!users.check_pass(req.body['password'])
+  ){
     res.sendFile(__dirname+"/src/registration-chg-pass.html");
   }
-  if (users.check_pass(req.body['password'])){
+  if (users.pass_match(req.body['password'], req.body['password_'])){
     if (!db.findUser(req.body['username'])){
       db.addtoTables(req.body);
-      res.sendFile(__dirname+"/src/login.html");
+      res.redirect(301, '/login');
     } else {
-      res.sendFile(__dirname+'/src/registration-usr-tkn.html')
+      res.sendFile(__dirname+"/src/registration-usr-tkn.html");
     }
-  } 
+  } else {
+    res.sendFile(__dirname+'/src/registration-psswd-match.html');
+  }
 });
 
 app.get("/login", (req, res) => {

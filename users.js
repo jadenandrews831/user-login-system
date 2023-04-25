@@ -13,7 +13,7 @@ function hash_pass(pass){
   var hash = crypto.createHash('sha256');
   data = hash.update(pass, 'utf-8');
   pass_hash= data.digest('hex');
-  return new String(pass_hash);
+  return pass_hash;
 }
 
 function pass_match(pass, pass_){
@@ -52,12 +52,8 @@ class Users{
     `, (err, rows) => {
       if (err){
         console.log('No Such Username')
-        return false
+        return false;
       } else{
-        if (rows.length != 1) return false;
-        rows.forEach(row => {
-          console.log(row)
-        });
         return true;
       }
 
@@ -65,12 +61,14 @@ class Users{
   }
 
   addtoTables(usr) {
+    const p = hash_pass(usr['password'])
+    console.log(p)
     this.db.all(`INSERT INTO Users (username, pass_hash, firstname, lastname) VALUES (@usr, @pass, @first, @last);
-      `, {'@usr':usr['username'], '@pass': hash_pass(usr['password']), '@first': usr['Last Name'], '@last': usr['First Name']}, (err)  => {
+      `, {'@usr':usr['username'], '@pass': p, '@first': usr['Last Name'], '@last': usr['First Name']}, (err)  => {
           if (err){
             if (err.code != 'SQLITE_CONSTRAINT' ){
               console.log("User not added")
-              return console.error(err)
+              send(console.error(err))
             }
           }
           this.checkForUser(usr);
