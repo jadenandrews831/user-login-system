@@ -46,52 +46,62 @@ class Users{
 
   }
 
-  findUser(username){
-    this.db.exec(`
-    SELECT username FROM Users WHERE username = ${username};
-    `, (err, rows) => {
-      if (err){
-        console.log('No Such Username')
-        return false;
-      } else{
-        return true;
-      }
+  findUser(usr){
+    return new Promise(send => { 
+      this.db.all(`
+      SELECT username FROM Users WHERE username=@usr;
+      `, {'@usr': usr['username']}, (err, rows) => {
+        if (err) {
+          send(false);
+        } 
+        if (rows.length == 0){
+          send(false);
+        } else if (rows.length >= 1){
+          rows.forEach(row => {
+            console.log(row);
+          })
+          console.log("Found user " + rows[0].username + " with matching pass");
+          send(true);
+        } else {
+          send(false);
+          console.log("Hmm... something went wrong. Multiple Users Found")
+        }
 
+        });
     });
   }
 
   addtoTables(usr) {
-    const p = hash_pass(usr['password'])
-    console.log(p)
     this.db.all(`INSERT INTO Users (username, pass_hash, firstname, lastname) VALUES (@usr, @pass, @first, @last);
-      `, {'@usr':usr['username'], '@pass': p, '@first': usr['Last Name'], '@last': usr['First Name']}, (err)  => {
-          if (err){
-            if (err.code != 'SQLITE_CONSTRAINT' ){
+      `, {'@usr':usr['username'], '@pass': hash_pass(usr['password']), '@first': usr['Last Name'], '@last': usr['First Name']}, (err)  => {
+          if (err.code == 'SQLITE_CONSTRAINT'){
               console.log("User not added")
-              send(console.error(err))
-            }
+              console.error(err)
           }
-          this.checkForUser(usr);
-          console.log("Added new user");
+          if (this.checkForUser(usr)) {
+            console.log(usr)
+            console.log("Added new user");
+          }
         });
   }
 
   checkForUser(usr) {
-    
     return new Promise(send => { 
       this.db.all(`
       SELECT username, pass_hash FROM Users WHERE username=@usr AND pass_hash=@pass;
-      `, {'@usr': String(usr['username']), '@pass': hash_pass(usr['password'])}, (err, rows) => {
+      `, {'@usr': usr['username'], '@pass': hash_pass(usr['password'])}, (err, rows) => {
         if (err) {
           send(false);
           console.log(err);
-          exit();
         } 
         if (rows.length == 0){
           send(false);
-        } else if (rows.length == 1){
-          send(true);
+        } else if (rows.length >= 1){
+          rows.forEach(row => {
+            console.log(row);
+          })
           console.log("Found user " + rows[0].username + " with matching pass");
+          send(true);
         } else {
           send(false);
           console.log("Hmm... something went wrong. Multiple Users Found")

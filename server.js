@@ -37,16 +37,7 @@ app.post("/registration", (req, res) => {
   ){
     res.sendFile(__dirname+"/src/registration-chg-pass.html");
   }
-  if (users.pass_match(req.body['password'], req.body['password_'])){
-    if (!db.findUser(req.body['username'])){
-      db.addtoTables(req.body);
-      res.redirect(301, '/login');
-    } else {
-      res.sendFile(__dirname+"/src/registration-usr-tkn.html");
-    }
-  } else {
-    res.sendFile(__dirname+'/src/registration-psswd-match.html');
-  }
+  check_username(req, res);
 });
 
 app.get("/login", (req, res) => {
@@ -67,7 +58,7 @@ app.listen(3000, () => {
 });
 
 async function login(req, res) {
-  bool = await db.checkForUser(req.body);
+  const bool = await db.checkForUser(req.body);
   console.log(bool);
   if (bool) {  
     res.redirect(301, '/tic-tac-toe');
@@ -75,5 +66,22 @@ async function login(req, res) {
   {
     console.log("Login Failed")
     res.sendFile(__dirname+"/src/login-err.html");
+  }
+}
+
+async function check_username(req, res){
+  if (users.pass_match(req.body['password'], req.body['password_'])){
+    const founduser = await db.findUser(req.body);
+    console.log(req.body);
+    console.log("Found:"+founduser);
+    if (!founduser){
+      console.log(founduser)
+      db.addtoTables(req.body);
+      res.redirect(301, '/login');
+    } else {
+      res.sendFile(__dirname+"/src/registration-usr-tkn.html");
+    }
+  } else {
+    res.sendFile(__dirname+'/src/registration-psswd-match.html');
   }
 }
