@@ -3,7 +3,7 @@ var fs = require('fs');
 var sqlite3 = require('sqlite3');
 var crypto = require('crypto')
 
-const psswd_check = /^(?=.{8,})(?=.*[a-z])(?=.*[A-Z])[\w\d_\)\(\*\&\^\%\$\#\@\!]*$/gm   //requires one capital letter and o
+const psswd_check = /^(?=.{8,64})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d_" "\)\(\*\&\^\%\$\#\@\!])(?=)[\w\d_" "\)\(\*\&\^\%\$\#\@\!]*$/gm  //requires one capital letter, one lowercase letter, and one number
 
 function check_pass(pass) {
   return psswd_check.test(pass);
