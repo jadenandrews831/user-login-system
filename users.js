@@ -51,7 +51,6 @@ class Users{
     SELECT username FROM Users WHERE username = ${username};
     `, (err, rows) => {
       if (err){
-        console.error(err);
         console.log('No Such Username')
         return false
       } else{
@@ -66,24 +65,25 @@ class Users{
   }
 
   addtoTables(usr) {
-    this.db.exec(`
-    INSERT INTO Users (username, pass_hash, firstname, lastname) VALUES ('${usr['username']}', '${hash_pass(usr['password'])}', '${usr['First Name']}', '${usr['Last Name']}');
-        `, (err, rows)  => {
+    this.db.all(`INSERT INTO Users (username, pass_hash, firstname, lastname) VALUES (@usr, @pass, @first, @last);
+      `, {'@usr':usr['username'], '@pass': hash_pass(usr['password']), '@first': usr['Last Name'], '@last': usr['First Name']}, (err)  => {
           if (err){
-            console.log("User not added")
-            return console.error(err)
+            if (err.code != 'SQLITE_CONSTRAINT' ){
+              console.log("User not added")
+              return console.error(err)
+            }
           }
-          console.log(`rows: {rows}`)
           this.checkForUser(usr);
           console.log("Added new user");
         });
   }
 
   checkForUser(usr) {
-    return new Promise(send => {
+    
+    return new Promise(send => { 
       this.db.all(`
-      SELECT username, pass_hash FROM Users WHERE username='${usr['username']}' AND pass_hash='${hash_pass(usr['password'])}';
-      `, [], (err, rows) => {
+      SELECT username, pass_hash FROM Users WHERE username=@usr AND pass_hash=@pass;
+      `, {'@usr': String(usr['username']), '@pass': hash_pass(usr['password'])}, (err, rows) => {
         if (err) {
           send(false);
           console.log(err);

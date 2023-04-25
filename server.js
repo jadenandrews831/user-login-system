@@ -24,6 +24,10 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname+'/src/registration.html');
 });
 
+app.post("/", (req, res) => {
+  login(req, res);
+});
+
 app.get("/registration", (req, res) => {
   res.sendFile(__dirname+'/src/registration.html');
 });
@@ -47,9 +51,9 @@ app.get("/login", (req, res) => {
   console.log(req.body);
 });
 
-app.post("/login", (req, res) => {
-  login(req, res);
-})
+app.get("/tic-tac-toe", (req, res) => {
+  res.sendFile(__dirname+"/src/index.html")
+});
 
 app.get("/style.css", (req, res) => {
   res.sendFile(__dirname+'/src/style.css');
@@ -62,8 +66,8 @@ app.listen(3000, () => {
 async function login(req, res) {
   bool = await db.checkForUser(req.body);
   console.log(bool);
-  if (bool) {
-    res.sendFile(__dirname+"/src/index.html");
+  if (bool) {  
+    res.redirect(301, '/tic-tac-toe');
   } else 
   {
     console.log("Login Failed")
