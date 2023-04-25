@@ -34,6 +34,10 @@
     opacity: 1;
     font-weight: bold;
 }
+.message {
+  color: #FF5733;
+  
+}
 body{
     margin: 0;
     padding: 0;
