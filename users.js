@@ -42,21 +42,75 @@ class Users{
     });
     this.createTable();
     this.createLoggedIn();
+    this.createGroupsTable();
+  }
+
+  createGroupsTable() {
+    this.db.exec(`
+    CREATE TABLE IF NOT EXISTS groups (
+      g_id text primary key not null,
+      g_name text not null,
+      u_email text not null,
+      FOREIGN KEY(u_email) REFERENCES Users(email_address)
+    )
+    `, () => {
+      console.log('groups table created.')
+    })
+  }
+
+  addGroup(grp) {
+    this.db.all(`
+    INSERT INTO groups (g_id, g_name, u_email) VALUES (@id, @name, @email);
+    `, {'@hash': grp['id'], '@name': grp['name'], '@email': grp['email']}, (err) => {
+      if (err) {
+        console.log(err)
+      } else {
+        console.log('Group Added');
+      }
+    })
+  }
+
+  seeGroups(email) {
+    return new Promise(send => {
+      this.db.all(`
+      SELECT * FROM groups WHERE u_email=@email;
+      `, {'@email': email}, (err, rows) => {
+        if (err) {
+          console.log(err)
+          console.log('Email:', email)
+          send(null)
+        } else if (rows.length == 0) {
+          console.log('Email:', email)
+          console.log('No Groups Found')
+          send(null)
+        } else if (rows.length >= 1) {
+          rows.forEach(row => {
+            console.log(row)
+          });
+          send(rows)
+        } else {
+          console.log('Hmm... something went wrong');
+          send(null);
+        }
+      })
+    })
   }
 
   createLoggedIn() {
     this.db.exec(`
     CREATE TABLE IF NOT EXISTS logged_in (
-      hash text primary key not null
+      hash text primary key not null,
+      email text not null,
+      FOREIGN KEY(email) REFERENCES Users(email_address)
     );
     `, () => {
       console.log('logged in table created')
     });
   }
 
-  logIn(hash) {
-    this.db.all(`INSERT INTO logged_in (hash) VALUES (@hash);`
-      ,{'@hash': hash}, (err) => {
+  logIn(hash, email) {
+    this.db.all(`INSERT INTO logged_in (hash, email) VALUES (@hash, @email);`
+      ,{'@hash': hash, '@email': email}, (err) => {
         if(err) {
           console.log(err)
         } else {
@@ -66,13 +120,17 @@ class Users{
   }
 
   logOut(hash) {
-    this.db.all(`DELETE FROM logged_in WHERE hash=@hash`, 
-    {'@hash': hash}, (err) => {
-      if (err){
-        console.log(err)
-      } else {
-        console.log('Logged Out')
-      }
+    return new Promise(send => {
+      this.db.all(`DELETE FROM logged_in WHERE hash=@hash`, 
+      {'@hash': hash}, (err) => {
+        if (err){
+          console.log('Error:', err)
+          send(false)
+        } else {
+          console.log('Logged Out')
+          send(true)
+        }
+      })
     })
   }
 
@@ -140,6 +198,29 @@ class Users{
     });
   }
 
+  getCurrentUserEmail(hash){
+    return new Promise(send => {
+      this.db.all(`
+      SELECT email FROM logged_in where hash=@hash;
+      `, {'@hash': hash}, (err, rows) => {
+        if (err) {
+          console.log(err)
+          send(null);
+        } else if (rows.length == 0) {
+          console.log('No User Found');
+          send(null)
+        } else if (rows.length == 1) {
+          console.log('User Found');
+          console.log(rows[0].email);
+          send(rows[0].email);
+        } else {
+          console.log('Hmmm... something went wrong. Multiple Users found');
+          send(null);
+        }
+      })
+    })
+  }
+
   addtoTables(usr) {
     this.db.all(`INSERT INTO Users (email_address, pass_hash, firstname, lastname) VALUES (@email, @pass, @first, @last);
       `, {'@email':usr['email'], '@pass': hash_pass(usr['password']), '@first': usr['Last Name'], '@last': usr['First Name']}, (err)  => {
@@ -185,27 +266,9 @@ class Users{
   }
 }
 
-class Groups{
-  constructor (grp_name, usr){
-    this.grp_name = grp_name;
-    this.usr = usr;
-    console.log("Created Group: "+grp_name);
 
-    this.db = new sqlite3.Database(this.usr.db_name, err => {
-      if (err) {
-        return console.error(err.message);
-      }
-      console.log(`Groups connected to ${this.db_name}`);
-    })
-  }
-
-  addContact() {
-
-  }
-}
 
 module.exports.Users = Users;
-module.exports.Groups = Groups;
 module.exports.check_pass = check_pass;
 module.exports.hash_pass = hash_pass;
 module.exports.check_email = check_email;

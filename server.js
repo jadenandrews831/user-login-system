@@ -33,9 +33,7 @@ app.get("/registration", (req, res) => {
 });
 
 app.get("/logout", (req, res) => {
-  db.logOut(req.headers.cookie.split('=')[1]); // assumes login cookie is the only cookie
-  res.clearCookie('usr');
-  res.redirect(301, '/login')
+  logout(req, res)
 })
 
 app.post("/registration", (req, res) => {
@@ -50,14 +48,17 @@ app.post("/registration", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.sendFile(__dirname+'/src/login.html');
-  console.log(req.body);
+  res.redirect(301, '/')
 });
 
 app.get("/groups", (req, res) => {
-  console.log('Cookies: ',req.headers.cookie);
-  res.sendFile(__dirname+"/src/index.html")
+  getGroups(req, res)
 });
+
+app.get("/groups/group", (req, res) => {
+  const hash = req.headers.cookie.split('=')[1];  // assumes login cookie is the only cookie
+  const email = db.getCurrentUserEmail(hash);
+})
 
 app.get("/style.css", (req, res) => {
   res.sendFile(__dirname+'/src/style.css');
@@ -67,22 +68,77 @@ app.get('/groups.js', (req, res) => {
   res.sendFile(__dirname+'/src/groups.js')
 })
 
+app.get('/get_groups', (req, res) => {
+  get_groups(req, res);
+})
+
+app.get('*', (req, res) => {
+  res.redirect(301, '/')
+})
+
 app.listen(3000, () => {
   console.log("Listening on Port http://localhost:3000");
 });
+
+async function getGroups(req, res) {
+  if (req.headers.cookie) {
+    const hash = req.headers.cookie.split('=')[1];  // assumes login cookie is the only cookie
+    console.log('Hash:', hash)
+    const email = await db.getCurrentUserEmail(hash)
+    if (email) {
+      res.sendFile(__dirname+"/src/index.html")
+    } else {
+      res.clearCookie('usr')
+      res.redirect(301,'/')
+    }
+    
+  }
+  else {
+    res.redirect(301, '/login')
+  }
+}
+
+async function logout(req, res) {
+  console.log('Accessing /logout')
+  const bool = await db.logOut(req.headers.cookie.split('=')[1]); // assumes login cookie is the only cookie
+  if (bool) {
+    res.clearCookie('usr');
+    console.log('Logging out...')
+    res.sendFile(__dirname+'/src/login.html')
+  }
+}
 
 async function check_login(req, res) {
   if (req.headers.cookie) {  // assumes only cookie is login cookie
     hash = req.headers.cookie.split('=');
     const bool = await db.loggedIn(hash[1]);
+    console.log('Logged IN: ', bool)
     if (bool) {
       res.redirect(301, '/groups')
     } else {
-      res.sendFile(__dirname+'/src/registration.html');
+      res.sendFile(__dirname+'/src/login.html');
     }
   } else {
-    res.sendFile(__dirname+'/src/registration.html');
+    res.sendFile(__dirname+'/src/login.html');
   }
+}
+
+async function get_groups(req, res) {
+  const hash = req.headers.cookie.split('=')[1];  // assumes login cookie is the only cookie
+  const email = db.getCurrentUserEmail(hash);
+  console.log('Email:', email)
+  if (email) {
+    const grps = await db.seeGroups(email)
+    console.log('Groups:', grps)
+    if (grps) {
+      res.json({groups: grps})
+    } else {
+      res.json({groups: 'No Groups Found!'})
+    }
+  }  else {
+    res.json({groups: 'Error: No User Logged In'})
+  }
+  
 }
 
 async function login(req, res) {
@@ -91,7 +147,7 @@ async function login(req, res) {
   if (bool) { 
     const cookie = make_cookie(req.body['email']);
     res.cookie('usr', cookie);
-    db.logIn(cookie);
+    db.logIn(cookie, req.body['email']);
     res.redirect(301, '/groups');
   } else 
   {
