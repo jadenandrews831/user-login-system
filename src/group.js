@@ -15,34 +15,33 @@ xhr.onload = () => {
 
     let cntcts = ''
     for (let i = 0; i < data.length; i++){
-      cntcts += `Name: ${data[i].f_name} ${data[i].l_name}<br>Email: ${data[i].email}`
+      cntcts += `Name: ${data[i].f_name} ${data[i].l_name}<br>Email: ${data[i].email}<br><br>`
     }
 
     group.innerHTML = `
-    Hello World!
-    ID = ${id}<br><br>
-
-
     ${cntcts}
     <br>
     <br>
-    <label for="email"> eMail: </label><br>
+    <h3> eMail: </h3>
+    <input type="text" name="email_subj" placeholder="Subject" id="subj" size="52"><br>
     <textarea id="email" name="email" rows="15" cols="50"></textarea><br>
     <button type="button" id="email_btn">Send eMail</button>
     `
   }
 
   const email = document.querySelector('#email');
+  const subj = document.querySelector('#subj')
   const btn = document.querySelector('#email_btn');
 
   btn.onclick = function() {
     alert('An email is being sent');
     const txt = email.value;
+    const sub = subj.value;
     console.log(txt);
     const x = new XMLHttpRequest();
     x.open("POST", `http://localhost:3000/send_email`, true)
     x.setRequestHeader("Content-type", 'application/x-www-form-urlencoded')
-    x.send(`email=${txt}&id=${id}`)
+    x.send(`email=${txt}&id=${id}&subj=${sub}`)
     x.onload = () => {
       let d = JSON.parse(x.response);
       location.href = d.next.url;

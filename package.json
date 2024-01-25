@@ -24,8 +24,10 @@
     "fs": "^0.0.1-security",
     "http": "^0.0.1-security",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.8",
     "nodemon": "^2.0.22",
-    "sqlite3": "^5.1.6"
+    "sqlite3": "^5.1.6",
+    "underscore-contrib": "^0.3.0"
   },
   "description": ""
 }

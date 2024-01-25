@@ -1,5 +1,7 @@
 const express = require("express");
 const multer = require('multer');
+const nodemailer = require('nodemailer');
+const weave = require('underscore-contrib'); 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/');
@@ -17,6 +19,16 @@ const app = express();
 const upload = multer({ storage })
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+const transporter = nodemailer.createTransport({
+  port: 465,
+  host: "smtp.gmail.com",
+  auth: {
+    user: 'jadenandrews831@gmail.com',
+    pass: process.env.gmail
+  },
+  secure: true
+})
 
 
 
@@ -118,22 +130,59 @@ app.post("/add_group", upload.single('contact_list'),(req, res) => {
 });
 
 app.post("/send_email", (req, res) => {
-  const email = req.body.email
-  const gid = req.body.id
+  const email = req.body.email;
+  const gid = req.body.id;
+  const subj = req.body.subj;
   console.log('Email Received: >>>', email)
   const next = {url: 'http://localhost:3000/'}
   console.log('Next: ', next);
   res.json({next});
-  send_email(email, gid);
+  send_email(subj, email, gid);
 })
 
 app.listen(3000, () => {
   console.log("Listening on Port http://localhost:3000");
 });
 
-async function send_email(email, gid) {
+async function send_email(subj, email, gid) {
   console.log('Sending email...');
   console.log(`Email >>> \n${email}\n>>>\nGID: ${gid}`)
+  const dynamics = email.split('$$').filter((a, i) => i%2===1);
+  const statics = email.split('$$').filter((a, i) => i%2===0);
+  console.log("Dynamics:", dynamics);
+  console.log("Statics: ", statics);
+  const contacts = await db.getContacts(gid);
+  console.log("Contacts: ", JSON.stringify(contacts));
+  for (let i = 0; i < contacts.length; i++) {
+    let contact = contacts[i];
+    let c_dynamics = [...dynamics]
+    console.log("c_dynamics.length:", c_dynamics.length)
+    for (let j = 0; j < c_dynamics.length; j++){
+      let d = c_dynamics[j]
+      if (d == 'NAME') {
+        c_dynamics[j] = contact.f_name + ' ' + contact.l_name;
+      }
+    }
+    console.log("c_dynamics:", c_dynamics);
+    let final_message = weave.weave(statics, c_dynamics).join('');
+    console.log("Woven:\n"+final_message)
+
+    const mailData = {
+      from: 'jadenandrews831@gmail.com',
+      to: contact.email,
+      subject: subj,
+      text: final_message
+    }
+
+    transporter.sendMail(mailData, function(err, info) {
+      if (err){
+        console.log(err);
+      } else {
+        console.log(info);
+      }
+    })
+  }
+
 }
 
 async function get_contacts(req, res) {
