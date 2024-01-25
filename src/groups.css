@@ -1,0 +1,23 @@
+#groups {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  justify-content: center;
+  gap: 25px;
+}
+
+.sub_groups {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  height: 25vh;
+  align-items: flex-start;
+  text-align: center;
+  padding-left: 3vh;
+  padding-right: 3vh;
+  border: 1px solid #4c4a4a; 
+}
+
+.sub_groups a {
+  text-decoration: none;
+}

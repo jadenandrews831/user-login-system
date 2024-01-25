@@ -47,6 +47,25 @@ class Users{
     this.createGtoCTable();
   }
 
+  getContacts(gid){
+    return new Promise(send => {
+      this.db.all(`
+      SELECT * FROM contacts WHERE id IN (SELECT c_id FROM groups_to_contacts WHERE g_id=@gid)
+      `, {'@gid': gid}, (err, rows) => {
+        if (err) {
+          console.log('getContacts Error >>>', err)
+          send(null)
+        } else {
+          rows.forEach(row => {
+            console.log('Row: ', row);
+          })
+          console.log('Sending Contacts...')
+          send(rows);
+        }
+      })
+    })
+  }
+
   addGtoC(gandc) {
     this.db.all(`
     INSERT INTO groups_to_contacts (g_id, c_id) VALUES (@gid, @cid);

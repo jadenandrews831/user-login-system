@@ -64,18 +64,39 @@ app.get("/style.css", (req, res) => {
 
 app.get('/groups.js', (req, res) => {
   res.sendFile(__dirname+'/src/groups.js');
-})
+});
+
+app.get('/group.js', (req, res) => {
+  res.sendFile(__dirname+'/src/group.js');
+});
 
 app.get('/get_groups', (req, res) => {
   get_groups(req, res);
-})
+});
 
 app.get("/add_group", (req, res) => {
   res.sendFile(__dirname+'/src/add_group.html');
+});
+
+app.get('/groups.css', (req, res) => {
+  res.sendFile(__dirname+'/src/groups.css');
+});
+
+app.get('/contacts', (req, res) => {
+  getContacts(req, res)
 })
 
+app.get('/grp_contacts', (req, res) => {
+  get_contacts(req, res)
+})
+
+app.get("/group", (req, res) => {
+  const gid = req.query.id;
+  res.sendFile(__dirname+'/src/group.html')
+});
+
 app.get('*', (req, res) => {
-  console.log('Webpage not found');
+  console.log(`Webpage not found`);
   res.redirect(301, '/');
 });
 
@@ -96,9 +117,56 @@ app.post("/add_group", upload.single('contact_list'),(req, res) => {
   add_group(req, res);
 });
 
+app.post("/send_email", (req, res) => {
+  const email = req.body.email
+  const gid = req.body.id
+  console.log('Email Received: >>>', email)
+  const next = {url: 'http://localhost:3000/'}
+  console.log('Next: ', next);
+  res.json({next});
+  send_email(email, gid);
+})
+
 app.listen(3000, () => {
   console.log("Listening on Port http://localhost:3000");
 });
+
+async function send_email(email, gid) {
+  console.log('Sending email...');
+  console.log(`Email >>> \n${email}\n>>>\nGID: ${gid}`)
+}
+
+async function get_contacts(req, res) {
+  const gid = req.query.id;
+
+  let contacts = await db.getContacts(gid);
+  let c = []
+
+  for (i = 0; i < contacts.length; i++){
+    c.push(contacts[i])
+  }
+
+  const resp = {data: c}
+
+  console.log('Contact Data:', JSON.stringify(resp))
+  res.json(resp)
+}
+
+async function getContacts(req, res) {
+  const gid = req.query.id;
+
+  let contacts = await db.getContacts(gid);
+  let c = []
+
+  for (i = 0; i < Math.min(3, contacts.length); i++){
+    c.push(contacts[i])
+  }
+
+  const resp = {data: c}
+
+  console.log('Contact Data:', JSON.stringify(resp))
+  res.json(resp)
+}
 
 async function getGroups(req, res) {
   if (req.headers.cookie) {
