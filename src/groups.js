@@ -8,8 +8,8 @@ xhr.onload = () => {
   if (xhr.readyState == 4 && xhr.status == 200) {
     const data = xhr.response;
     group_div.innerHTML = `
-    <h1>${data.groups}</h1>
-    <a href="/groups/group">+ new group</a>
+    <h1>${JSON.stringify(data.groups)}</h1>
+    <a href="/add_group">+ new group</a>
     `
   } else {
     console.log(`Error: ${xhr.status}`);

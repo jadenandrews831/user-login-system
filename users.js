@@ -43,6 +43,108 @@ class Users{
     this.createTable();
     this.createLoggedIn();
     this.createGroupsTable();
+    this.createContactsTable();
+    this.createGtoCTable();
+  }
+
+  addGtoC(gandc) {
+    this.db.all(`
+    INSERT INTO groups_to_contacts (g_id, c_id) VALUES (@gid, @cid);
+    `, {'@gid': gandc['gid'], '@cid': gandc['cid']}, (err) => {
+      if (err) {
+        console.log(err)
+      } else {
+        console.log('g to c added')
+      }
+    })
+  }
+
+  createGtoCTable() {
+    this.db.exec(`
+    CREATE TABLE IF NOT EXISTS groups_to_contacts (
+      g_id text not null,
+      c_id text primary key,
+      FOREIGN KEY(g_id) REFERENCES groups(g_id),
+      FOREIGN KEY(c_id) REFERENCES contacts(id)
+    )
+    `, () => {
+      console.log('g_to_c table created')
+    })
+  }
+
+  addContact(contact) {
+    this.db.all(`
+    INSERT INTO contacts (f_name, l_name, email, id, u_email) VALUES (@fname, @lname, @email, @id, @uemail);
+    `, {'@fname': contact['fname'], '@lname': contact['lname'], '@email': contact['email'], '@id': contact['id'], '@uemail': contact['uemail']}, (err) => {
+      if (err) {
+        console.log('CONTACT ERROR >>>', err)
+      } else {
+        console.log('Contact Added');
+      }
+    })
+  }
+
+  createContactID() {
+    return new Promise(send => {
+      const id = Math.floor(Math.random() * (99999 - 10000)) + 10000;
+      console.log('ID:', id);
+
+      this.db.all(`
+        SELECT * FROM contacts WHERE id=@id
+      `, {'@id': id}, (err, rows) => {
+        if (err) {
+          console.log('Error: ', err)
+          send(null)
+        } else if (rows.length == 0) {
+          send(id);
+        } else if (rows.length >= 1) {
+          console.log('ID TAKEN');
+          send(this.createGroupID());
+        } else {
+          console.log('Hmmm... something went wrong');
+          send(null);
+        }
+      })
+    })
+  }
+
+  createContactsTable() {
+    this.db.exec(`
+    CREATE TABLE IF NOT EXISTS contacts (
+      f_name text not null,
+      l_name text not null,
+      email text not null,
+      id text primary key not null,
+      u_email not null,
+      FOREIGN KEY(u_email) REFERENCES Users(email_address)
+    )
+    `, () => {
+      console.log('contacts table created.')
+    })
+  }
+
+  createGroupID() {
+    return new Promise(send => {
+      const id = Math.floor(Math.random() * (99999 - 10000)) + 10000;
+      console.log('ID:', id);
+
+      this.db.all(`
+        SELECT * FROM groups WHERE g_id=@id
+      `, {'@id': id}, (err, rows) => {
+        if (err) {
+          console.log('Error: ', err)
+          send(null)
+        } else if (rows.length == 0) {
+          send(id);
+        } else if (rows.length >= 1) {
+          console.log('ID TAKEN');
+          send(this.createGroupID());
+        } else {
+          console.log('Hmmm... something went wrong');
+          send(null);
+        }
+      })
+    })
   }
 
   createGroupsTable() {
@@ -61,9 +163,10 @@ class Users{
   addGroup(grp) {
     this.db.all(`
     INSERT INTO groups (g_id, g_name, u_email) VALUES (@id, @name, @email);
-    `, {'@hash': grp['id'], '@name': grp['name'], '@email': grp['email']}, (err) => {
+    `, {'@id': grp['id'], '@name': grp['name'], '@email': grp['email']}, (err) => {
       if (err) {
-        console.log(err)
+        console.log('GROUP ERROR >>>',err)
+        console.log('Group:',grp)
       } else {
         console.log('Group Added');
       }

@@ -1,10 +1,24 @@
 const express = require("express");
+const multer = require('multer');
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniquePrefix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, uniquePrefix+'-'+file.originalname);
+  }
+})
+// const fs = require('fs');
 const bodyParser = require('body-parser');
 var users = require('./users.js'); 
 
 const app = express();
+const upload = multer({ storage })
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+
 
 const db = new users.Users('users.db');
 // var username = req.body.username;
@@ -36,10 +50,41 @@ app.get("/logout", (req, res) => {
   logout(req, res)
 })
 
+app.get("/login", (req, res) => {
+  res.redirect(301, '/');
+});
+
+app.get("/groups", (req, res) => {
+  getGroups(req, res);
+});
+
+app.get("/style.css", (req, res) => {
+  res.sendFile(__dirname+'/src/style.css');
+});
+
+app.get('/groups.js', (req, res) => {
+  res.sendFile(__dirname+'/src/groups.js');
+})
+
+app.get('/get_groups', (req, res) => {
+  get_groups(req, res);
+})
+
+app.get("/add_group", (req, res) => {
+  res.sendFile(__dirname+'/src/add_group.html');
+})
+
+app.get('*', (req, res) => {
+  console.log('Webpage not found');
+  res.redirect(301, '/');
+});
+
+
+
 app.post("/registration", (req, res) => {
   if (!users.check_pass(req.body['password'])
   ){
-    console.log('Password: '+req.body['password'])
+    console.log('Password: '+req.body['password']);
     console.log(users.check_pass(req.body['password']));
     res.sendFile(__dirname+"/src/registration-chg-pass.html");
   } else {
@@ -47,34 +92,9 @@ app.post("/registration", (req, res) => {
   }
 });
 
-app.get("/login", (req, res) => {
-  res.redirect(301, '/')
+app.post("/add_group", upload.single('contact_list'),(req, res) => {
+  add_group(req, res);
 });
-
-app.get("/groups", (req, res) => {
-  getGroups(req, res)
-});
-
-app.get("/groups/group", (req, res) => {
-  const hash = req.headers.cookie.split('=')[1];  // assumes login cookie is the only cookie
-  const email = db.getCurrentUserEmail(hash);
-})
-
-app.get("/style.css", (req, res) => {
-  res.sendFile(__dirname+'/src/style.css');
-});
-
-app.get('/groups.js', (req, res) => {
-  res.sendFile(__dirname+'/src/groups.js')
-})
-
-app.get('/get_groups', (req, res) => {
-  get_groups(req, res);
-})
-
-app.get('*', (req, res) => {
-  res.redirect(301, '/')
-})
 
 app.listen(3000, () => {
   console.log("Listening on Port http://localhost:3000");
@@ -98,13 +118,41 @@ async function getGroups(req, res) {
   }
 }
 
+async function add_group(req, res) {
+  console.log('Uploading File...');
+  console.log(req.file);
+  console.log('Group Name:', req.body.Name);
+
+
+  // Group Created
+  const name = req.body.Name;
+  const id = await db.createGroupID();
+  const hash = req.headers.cookie.split('=')[1];  // assumes login cookie is the only cookie
+  const email = await db.getCurrentUserEmail(hash);
+  const grp = {'id': id, 'name': name, 'email': email}
+  console.log('Group: ', grp)
+  db.addGroup(grp)
+
+  // Contacts Created
+  const file = require('./uploads/'+req.file.filename);
+  for (let i = 0; i < Object.keys(file).length; i++) {
+    let contact = {'fname': file[`${i}`].f_name, 'lname': file[`${i}`].l_name, 'email': file[`${i}`].email, 'id': await db.createContactID(), 'uemail': email}
+    console.log(`Contact ${i}: ${JSON.stringify(contact)}`)
+    db.addContact(contact);
+
+    let gandc = {'gid': id, 'cid': contact.id}
+    db.addGtoC(gandc)
+  }
+
+  res.redirect(301, '/groups')
+}
+
 async function logout(req, res) {
   console.log('Accessing /logout')
   const bool = await db.logOut(req.headers.cookie.split('=')[1]); // assumes login cookie is the only cookie
   if (bool) {
     res.clearCookie('usr');
-    console.log('Logging out...')
-    res.sendFile(__dirname+'/src/login.html')
+    res.redirect(301, '/')
   }
 }
 
@@ -125,7 +173,7 @@ async function check_login(req, res) {
 
 async function get_groups(req, res) {
   const hash = req.headers.cookie.split('=')[1];  // assumes login cookie is the only cookie
-  const email = db.getCurrentUserEmail(hash);
+  const email = await db.getCurrentUserEmail(hash);
   console.log('Email:', email)
   if (email) {
     const grps = await db.seeGroups(email)
